@@ -4,19 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**TimeFinder** is a single-page web application for visualizing meeting times between Vietnam (Asia/Ho_Chi_Minh) and Sweden (Europe/Stockholm) timezones. Built as a pure static HTML/CSS/JavaScript application optimized for GitHub Pages hosting.
+**Mini Apps Collection** - A repository containing multiple simple, focused web applications, each in its own folder. All apps are pure static HTML/CSS/JavaScript with no build process, optimized for GitHub Pages hosting.
+
+## Repository Structure
+
+```
+/
+├── index.html              # Landing page with links to all apps
+├── timefinder/
+│   └── index.html         # TimeFinder timezone comparison app
+├── vndxsek/
+│   └── index.html         # VND/SEK currency converter
+├── CLAUDE.md              # This file (developer documentation)
+└── README.md              # User documentation
+```
 
 ## Development Commands
 
 ### Testing Locally
 
 ```bash
-# Open directly in browser
+# Open landing page
 open index.html
 
-# Or serve locally (recommended for testing)
+# Or serve locally (recommended)
 python -m http.server 8000
-# Then visit http://localhost:8000
+# Visit http://localhost:8000
 ```
 
 ### Deployment
@@ -24,122 +37,141 @@ python -m http.server 8000
 ```bash
 # Commit and push to main branch
 git add .
-git commit -m "Update timezone visualizer"
+git commit -m "Update apps"
 git push origin main
 
 # GitHub Pages will automatically deploy from main branch
 ```
 
-## Architecture
+### Adding New Apps
 
-### Single-File Application (index.html)
+```bash
+# Create new app folder
+mkdir newapp/
 
-The entire application is self-contained in `index.html` with:
-- **Embedded CSS**: All styles in `<style>` tag (no external stylesheets)
-- **Embedded JavaScript**: Complete functionality in `<script>` tag (no external JS files)
-- **No build process**: Direct deployment to GitHub Pages
-- **No dependencies**: Pure vanilla JavaScript, no frameworks or libraries
+# Create app
+# Add newapp/index.html with self-contained app
 
-### JavaScript Architecture
+# Update root index.html to link to new app
+# Update README.md with app description
+```
 
-**TimeFinder Class** (`index.html:line ~230`):
-- Main application controller
-- Manages state and coordinates UI updates
-- Handles timezone conversions using `Intl.DateTimeFormat` API
+## Apps Architecture
 
-**Key Methods**:
-- `init()`: Initializes app, sets default to current Vietnam time
-- `getTimeInZone(hour, timezone)`: Converts selected Vietnam hour to target timezone
-- `renderTimelines()`: Generates 24-hour timeline HTML for both zones
-- `selectHour(hour)`: Updates selected time and refreshes display
-- `copyToClipboard()`: Copies formatted meeting time with fallback for older browsers
+### 1. TimeFinder (`/timefinder/`)
 
-### Timezone Handling
+**Purpose**: Visual timezone comparison for Sweden, Thailand, and Vietnam
 
-Uses browser's native `Intl.DateTimeFormat` API:
-- **Vietnam**: `Asia/Ho_Chi_Minh` (UTC+7, no DST)
-- **Sweden**: `Europe/Stockholm` (UTC+1/+2 with automatic DST handling)
-- **Conversion**: Create Date in Vietnam time, convert to target timezone
-- **DST**: Browser automatically handles daylight saving transitions
+**Key Features**:
+- 24-hour vertical timeline visualization
+- Three timezones with toggle controls
+- Working hours highlighted (9 AM - 5 PM)
+- Synchronized scrolling on mobile
+- Vietnam as default reference timezone
 
-### CSS Design System
+**Tech Stack**:
+- Single HTML file with embedded CSS/JS
+- Uses `Intl.DateTimeFormat` for timezone handling
+- No external dependencies
 
-**CSS Variables** (`index.html:line ~9`):
-- `--primary-color`: Main brand color
-- `--working-hours`: Light blue background for 9 AM - 5 PM
-- `--selected-time`: Highlight color for selected hour
-- `--current-time`: Yellow outline for current hour
+**Key Implementation Details**:
+- `TimeFinder` class manages state and UI
+- Timezones: `{ sweden: 'Europe/Stockholm', thailand: 'Asia/Bangkok', vietnam: 'Asia/Ho_Chi_Minh' }`
+- Dynamic grid layout adjusts to visible columns
+- Mobile: Vertical timelines, desktop: Can be horizontal or vertical based on screen
 
-**Layout**:
-- CSS Grid for 24-hour timeline (24 equal columns)
-- Flexbox for time display and responsive stacking
-- Mobile-first responsive design with breakpoints at 768px and 480px
+### 2. VND/SEK Converter (`/vndxsek/`)
 
-## Key Features Implementation
+**Purpose**: Live currency conversion between Vietnamese Dong and Swedish Krona
 
-### Timeline Visualization
-- Each hour is a clickable block in a 24-column grid
-- Working hours (9-17) have blue background
-- Night hours (22-6) have gray background
-- Current hour marked with yellow outline
-- Selected hour highlighted in dark blue
+**Key Features**:
+- Live exchange rates from exchangerate-api.com
+- Instant conversion as user types (no button needed)
+- Bidirectional conversion with swap button
+- Auto-refresh every 5 minutes
+- Fallback rates for offline use
 
-### Time Selection & Sync
-- Clicking any hour in Vietnam timeline updates both displays
-- Sweden timeline shows corresponding time (accounting for DST)
-- Both timelines highlight the same selected "moment in time"
+**Tech Stack**:
+- Single HTML file with embedded CSS/JS
+- Uses exchangerate-api.com free API (1,500 requests/month)
+- No external dependencies
 
-### Copy to Clipboard
-- Primary: Uses modern `navigator.clipboard.writeText()` API
-- Fallback: Uses `document.execCommand('copy')` for older browsers
-- Visual feedback: Button changes to "Copied!" with green background
+**Key Implementation Details**:
+- `CurrencyConverter` class manages state and API calls
+- API: `https://api.exchangerate-api.com/v4/latest/{currency}`
+- VND formatted without decimals, SEK with 2 decimals
+- Swap functionality reverses conversion direction
+
+**API Notes**:
+- Free tier requires no API key
+- Rate limits: 1,500 requests/month
+- Fallback: Hardcoded approximate rates if API fails
+
+## Common Patterns
+
+### Single-File Apps
+All apps follow the same pattern:
+- Complete application in one `index.html` file
+- Embedded `<style>` tag for all CSS
+- Embedded `<script>` tag for all JavaScript
+- No build process, no external dependencies
+- Mobile-first responsive design
+
+### Styling
+- CSS variables in `:root` for consistent theming
+- Mobile breakpoints at 768px and 480px
+- Gradient backgrounds: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
+- White content cards with rounded corners
+
+### JavaScript
+- ES6 class-based architecture
+- Event-driven updates
+- Uses modern browser APIs (`Intl`, `fetch`, `navigator.clipboard`)
+- Fallbacks for older browsers where needed
 
 ## Testing Considerations
 
-### Manual Testing Checklist
-1. **Timezone accuracy**: Verify times match actual Vietnam/Sweden times
-2. **DST transitions**: Test around March/October when Sweden changes time
-3. **Day crossover**: Select late evening hours to verify day changes correctly
-4. **Mobile responsiveness**: Test on phone screens (horizontal scroll for timeline)
-5. **Clipboard**: Test copy functionality on different browsers
-6. **Touch interactions**: Verify hour selection works on touch devices
+### TimeFinder
+1. Verify timezone accuracy against actual times
+2. Test DST transitions (March/October for Sweden)
+3. Test day crossover for evening times
+4. Verify synchronized scrolling on mobile
+5. Test toggle functionality with different combinations
 
-### Edge Cases
-- **Midnight crossings**: Times near midnight may show different days
-- **DST transitions**: Hour may not exist or repeat during DST changes
-- **Time difference**: Vietnam/Sweden offset varies (5-6 hours) based on DST
+### VND/SEK Converter
+1. Verify exchange rate accuracy
+2. Test offline fallback
+3. Test swap functionality
+4. Verify number formatting (VND no decimals, SEK 2 decimals)
+5. Test live updates on input change
 
 ## Modification Guidelines
 
-### Changing Timezones
-To adapt for different timezone pairs, modify:
-- `this.vietnamTZ` and `this.swedenTZ` in constructor
-- Update UI labels in HTML (timeline headers and time display)
-- Adjust `calculateTimeDifference()` method if needed
+### Adding New Apps
+1. Create folder: `mkdir newapp/`
+2. Create self-contained `index.html`
+3. Follow existing patterns (single file, embedded styles/scripts)
+4. Add back link to root: `<a href="../">← Back to Apps</a>`
+5. Update root `index.html` with new app card
+6. Update `README.md` with app description
 
-### Styling Changes
-- Modify CSS variables in `:root` for consistent theming
-- Working hours range: Change `isWorkingHour()` method and update legend
-- Timeline layout: Adjust `grid-template-columns` in `.timeline` class
+### Modifying Existing Apps
+- Keep single-file architecture
+- Maintain mobile-first responsive design
+- Use CSS variables for theming consistency
+- Add fallbacks for critical features
+- Test on mobile and desktop
 
-### Adding Features
-Keep the single-file architecture:
-- Add new JavaScript code within existing `<script>` tag
-- Add new CSS within existing `<style>` tag
-- Maintain mobile-first responsive approach
-
-## File Structure
-
-```
-/
-├── index.html    # Complete application (HTML/CSS/JS)
-├── README.md     # User documentation
-└── CLAUDE.md     # This file (developer documentation)
-```
+### Styling Consistency
+- Use shared color palette across apps
+- Maintain similar card/button styles
+- Keep consistent spacing and typography
+- Use same gradient backgrounds
 
 ## Performance Notes
 
-- Total file size: ~18KB (uncompressed)
-- No external requests (no CDNs, no fonts)
-- Loads instantly on GitHub Pages
-- No JavaScript bundling or minification needed
+- All apps load instantly (< 50KB each)
+- No external requests except for APIs (VND/SEK converter)
+- No JavaScript bundling needed
+- No CSS preprocessing needed
+- Perfect Lighthouse scores possible

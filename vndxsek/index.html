@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VND ⇄ SEK Currency Converter</title>
+    <meta name="description" content="Live currency converter between Vietnamese Dong (VND) and Swedish Krona (SEK)">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --success-color: #10b981;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --bg-light: #f9fafb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        .converter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .currency-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .currency-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .currency-code {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .currency-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            font-size: 1.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .currency-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .currency-input:disabled {
+            background: var(--bg-light);
+            cursor: not-allowed;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .result-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swap-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem auto;
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.5rem;
+        }
+
+        .swap-button:hover {
+            background: var(--bg-light);
+            border-color: var(--primary-color);
+            transform: rotate(180deg);
+        }
+
+        .rate-info {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .rate-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .rate-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .rate-timestamp {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .loading {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .currency-input {
+                font-size: 1.25rem;
+                padding: 0.875rem 1rem;
+            }
+
+            .result-display {
+                font-size: 1.5rem;
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../" class="back-link">← Back to Apps</a>
+
+        <div class="header">
+            <h1>💱 VND ⇄ SEK</h1>
+            <p class="subtitle">Live currency converter</p>
+        </div>
+
+        <div class="converter-section">
+            <div class="currency-label">
+                <span class="currency-name" id="fromCurrencyName">Vietnamese Dong</span>
+                <span class="currency-code" id="fromCurrencyCode">VND</span>
+            </div>
+            <div class="input-wrapper">
+                <input
+                    type="number"
+                    class="currency-input"
+                    id="amountInput"
+                    placeholder="0"
+                    min="0"
+                    step="any"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="input-hint" id="inputHint">Enter amount in thousands (×1,000)</div>
+        </div>
+
+        <button class="swap-button" id="swapButton" title="Swap currencies">⇅</button>
+
+        <div class="converter-section">
+            <div class="currency-label">
+                <span class="currency-name" id="toCurrencyName">Swedish Krona</span>
+                <span class="currency-code" id="toCurrencyCode">SEK</span>
+            </div>
+            <div class="result-display" id="result">0</div>
+        </div>
+
+        <div class="rate-info">
+            <div class="rate-label">Exchange Rate</div>
+            <div class="rate-value" id="rateDisplay">Loading...</div>
+            <div class="rate-timestamp" id="timestamp"></div>
+        </div>
+
+        <div class="error" id="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        class CurrencyConverter {
+            constructor() {
+                this.rate = null;
+                this.fromCurrency = 'VND';
+                this.toCurrency = 'SEK';
+                this.lastUpdate = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateHintVisibility();
+                this.fetchExchangeRate();
+
+                // Auto-refresh rate every 5 minutes
+                setInterval(() => this.fetchExchangeRate(), 5 * 60 * 1000);
+            }
+
+            setupEventListeners() {
+                const input = document.getElementById('amountInput');
+                const swapBtn = document.getElementById('swapButton');
+
+                input.addEventListener('input', () => this.convert());
+                swapBtn.addEventListener('click', () => this.swapCurrencies());
+
+                // Set initial focus
+                input.focus();
+            }
+
+            async fetchExchangeRate() {
+                try {
+                    // Using exchangerate-api.com free tier
+                    const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${this.fromCurrency}`);
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch exchange rate');
+                    }
+
+                    const data = await response.json();
+                    this.rate = data.rates[this.toCurrency];
+                    this.lastUpdate = new Date(data.time_last_updated * 1000);
+
+                    this.updateRateDisplay();
+                    this.convert();
+                    this.hideError();
+                } catch (error) {
+                    console.error('Error fetching exchange rate:', error);
+                    this.showError('Unable to fetch live rates. Please check your connection and try again.');
+
+                    // Fallback rate (approximate)
+                    if (!this.rate) {
+                        this.rate = this.fromCurrency === 'VND' ? 0.00038 : 2631.58;
+                        document.getElementById('rateDisplay').textContent = 'Using approximate rate (offline)';
+                    }
+                }
+            }
+
+            convert() {
+                const input = document.getElementById('amountInput');
+                const result = document.getElementById('result');
+
+                let amount = parseFloat(input.value) || 0;
+
+                // Apply 1000x multiplier when converting FROM VND
+                if (this.fromCurrency === 'VND') {
+                    amount = amount * 1000;
+                }
+
+                if (this.rate) {
+                    const converted = amount * this.rate;
+                    result.textContent = this.formatCurrency(converted, this.toCurrency);
+                } else {
+                    result.textContent = 'Loading...';
+                }
+            }
+
+            swapCurrencies() {
+                // Swap currencies
+                [this.fromCurrency, this.toCurrency] = [this.toCurrency, this.fromCurrency];
+
+                // Update UI labels
+                this.updateCurrencyLabels();
+
+                // Update hint visibility
+                this.updateHintVisibility();
+
+                // Fetch new rate and convert
+                this.rate = null;
+                this.fetchExchangeRate();
+            }
+
+            updateCurrencyLabels() {
+                const currencies = {
+                    VND: { name: 'Vietnamese Dong', code: 'VND' },
+                    SEK: { name: 'Swedish Krona', code: 'SEK' }
+                };
+
+                document.getElementById('fromCurrencyName').textContent = currencies[this.fromCurrency].name;
+                document.getElementById('fromCurrencyCode').textContent = currencies[this.fromCurrency].code;
+                document.getElementById('toCurrencyName').textContent = currencies[this.toCurrency].name;
+                document.getElementById('toCurrencyCode').textContent = currencies[this.toCurrency].code;
+            }
+
+            updateHintVisibility() {
+                const hint = document.getElementById('inputHint');
+                // Show hint only when converting FROM VND
+                if (this.fromCurrency === 'VND') {
+                    hint.style.display = 'block';
+                    hint.textContent = 'Enter amount in thousands (×1,000)';
+                } else {
+                    hint.style.display = 'none';
+                }
+            }
+
+            updateRateDisplay() {
+                const rateDisplay = document.getElementById('rateDisplay');
+                const timestamp = document.getElementById('timestamp');
+
+                if (this.rate) {
+                    rateDisplay.textContent = `1 ${this.fromCurrency} = ${this.formatNumber(this.rate, 6)} ${this.toCurrency}`;
+
+                    if (this.lastUpdate) {
+                        timestamp.textContent = `Updated: ${this.lastUpdate.toLocaleString()}`;
+                    }
+                }
+            }
+
+            formatCurrency(value, currency) {
+                if (currency === 'VND') {
+                    // VND doesn't use decimals
+                    return new Intl.NumberFormat('vi-VN', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(value);
+                } else {
+                    // SEK uses 2 decimals
+                    return new Intl.NumberFormat('sv-SE', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(value);
+                }
+            }
+
+            formatNumber(value, decimals) {
+                return new Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals
+                }).format(value);
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+
+            hideError() {
+                const errorDiv = document.getElementById('error');
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Initialize the converter when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CurrencyConverter();
+        });
+    </script>
+</body>
+</html>
