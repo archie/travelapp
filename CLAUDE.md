@@ -87,9 +87,11 @@ mkdir newapp/
 **Key Features**:
 - Live exchange rates from exchangerate-api.com
 - Instant conversion as user types (no button needed)
+- **1000× multiplier for VND input** (user enters thousands, app converts actual amount)
 - Bidirectional conversion with swap button
 - Auto-refresh every 5 minutes
 - Fallback rates for offline use
+- Compact mobile design optimized for keyboard visibility
 
 **Tech Stack**:
 - Single HTML file with embedded CSS/JS
@@ -99,8 +101,19 @@ mkdir newapp/
 **Key Implementation Details**:
 - `CurrencyConverter` class manages state and API calls
 - API: `https://api.exchangerate-api.com/v4/latest/{currency}`
+- **VND Input Multiplier**: When converting FROM VND, input is multiplied by 1,000
+  - Example: User enters `100` → Converts `100,000 VND`
+  - Hint displayed: "Enter amount in thousands (×1,000)"
+  - Hint auto-hides when converting FROM SEK
 - VND formatted without decimals, SEK with 2 decimals
-- Swap functionality reverses conversion direction
+- Swap functionality reverses conversion direction and updates hint visibility
+
+**Mobile Optimizations**:
+- Compact layout on ≤640px screens to keep both input and result above keyboard
+- Reduced padding, margins, and font sizes
+- Body aligned to `flex-start` instead of `center`
+- Result display: min-height 60px (vs 80px desktop)
+- All vertical spacing reduced by ~30-40% on mobile
 
 **API Notes**:
 - Free tier requires no API key
@@ -116,12 +129,27 @@ All apps follow the same pattern:
 - Embedded `<script>` tag for all JavaScript
 - No build process, no external dependencies
 - Mobile-first responsive design
+- **Back navigation**: Each app includes `<a href="../" class="back-link">← Back to Apps</a>` at the top
 
 ### Styling
 - CSS variables in `:root` for consistent theming
-- Mobile breakpoints at 768px and 480px
+- Mobile breakpoints at 768px (tablet) and 640px or 480px (phone)
 - Gradient backgrounds: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
 - White content cards with rounded corners
+- Back link styling:
+  ```css
+  .back-link {
+      display: inline-block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      transition: color 0.2s;
+  }
+  .back-link:hover {
+      color: var(--primary-color);
+  }
+  ```
 
 ### JavaScript
 - ES6 class-based architecture
@@ -144,6 +172,10 @@ All apps follow the same pattern:
 3. Test swap functionality
 4. Verify number formatting (VND no decimals, SEK 2 decimals)
 5. Test live updates on input change
+6. **Test 1000× multiplier**: Enter `100` VND → should convert `100,000 VND`
+7. **Test hint visibility**: Hint shows for VND→SEK, hides for SEK→VND
+8. **Test mobile keyboard**: On phone, verify both input and result visible when keyboard is open
+9. Test compact mobile layout maintains usability
 
 ## Modification Guidelines
 
@@ -161,6 +193,11 @@ All apps follow the same pattern:
 - Use CSS variables for theming consistency
 - Add fallbacks for critical features
 - Test on mobile and desktop
+- **Mobile keyboard considerations**: Ensure critical UI elements remain visible above keyboard on mobile
+  - Use compact layouts on small screens (≤640px)
+  - Align body to `flex-start` instead of `center` on mobile
+  - Test with on-screen keyboard open
+  - Reduce vertical spacing as needed
 
 ### Styling Consistency
 - Use shared color palette across apps
